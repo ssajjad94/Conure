@@ -208,6 +208,11 @@ int32_t latitude;
 
 uint32_t SendData=0;
 
+///////////////////////////////////////////////////////////////////////////////////
+FP32 speed = 0;
+FP32 heading = 0;
+///////////////////////////////////////////////////////////////////////////////////
+
 uint16_t batteryLevel_mV;
 
 uint16_t TIMES = 10000;
@@ -415,6 +420,10 @@ int main( void )
 			TimerInit( &TxTimer, OnTxTimerEvent );
 			gps.latitude = 0;
 			gps.longitude = 0;
+//////////////////////////////////////////////////////////
+			gps.speed = 0;
+			gps.direction = 0;
+//////////////////////////////////////////////////////////
 			lora_state_GPS_Send();      			
 		  lora_send();
 			TimerSetValue( &TxTimer,  APP_TX_DUTYCYCLE);
@@ -504,6 +513,16 @@ static void printf_uplink( void )
 	 PPRINTF("Pitch=%0.2f\r\n",((int)(Pitch1*100))/100.0);
 //	 PRINTF("%s: %.6f\n\r",(gps.latNS == 'N')?"South":"North",gps_latitude);
 //	 PRINTF("%s: %.6f\n\r ",(gps.lgtEW == 'E')?"East":"West",gps_longitude);
+
+/////////////////////////////////////////////////////////////////////////////////////
+//		
+//		speed = gps.speed;
+//		heading = gps.direction;
+//		
+	 PPRINTF("Speed = %0.2f\r\n", speed);
+	 PPRINTF("Heading = %0.2f\r\n", heading);
+//		
+/////////////////////////////////////////////////////////////////////////////////////
    
 	 if(gps.latNS != 'N')
 	 {
@@ -547,12 +566,17 @@ static void printf_uplink( void )
 	 {
 		  PPRINTF("PDOP is %.2f\n\r",pdop_comp);	
 	 }	
-	 pdop_fixed=0.0;
-	 pdop_comp=7.0;	 
-   gps.latitude = 0;
-   gps.longitude = 0;		
-   gps_latitude = 0;
-   gps_longitude = 0;	
+	 pdop_fixed=0.0; 	pdop_comp=7.0;	 
+   gps.latitude = 0;   
+	 gps.longitude = 0;		
+   gps_latitude = 0;   
+	 gps_longitude = 0;	
+//////////////////////////////////////////////////////////////////////////////
+	 speed = 0; 	
+	 gps.speed = 0;
+	 heading = 0; 	
+	 gps.direction = 0;
+//////////////////////////////////////////////////////////////////////////////
 	}	
 	else
 	{
@@ -566,7 +590,6 @@ static void printf_uplink( void )
 	 PPRINTF("[%lu]", ts); 			
 	 PPRINTF("send NO.%d Alarm data \n\r",Alarm_times);		
 	}	
-	
    DelayMs(1000);	
 }
 
@@ -692,7 +715,17 @@ static void Send( void )
 				AppData.Buff[i++] = 0x00;	
 				AppData.Buff[i++] = 0x00;
 				AppData.Buff[i++] = 0x00;	
-				AppData.Buff[i++] = 0x00;				
+				AppData.Buff[i++] = 0x00;
+///////////////////////////////////////////////////////////////////////////////////				
+				AppData.Buff[i++] = 0x00;
+				AppData.Buff[i++] = 0x00;
+				AppData.Buff[i++] = 0x00;
+				AppData.Buff[i++] = 0x00;
+				AppData.Buff[i++] = 0x00;
+				AppData.Buff[i++] = 0x00;
+				AppData.Buff[i++] = 0x00;
+				AppData.Buff[i++] = 0x00;
+///////////////////////////////////////////////////////////////////////////////////
 			}
 		 else if(lora_getGPSState() == STATE_GPS_NO)
 		 {
@@ -703,18 +736,39 @@ static void Send( void )
 				AppData.Buff[i++] = 0xFF;	
 				AppData.Buff[i++] = 0xFF;	
 				AppData.Buff[i++] = 0xFF;	
-				AppData.Buff[i++] = 0xFF;				 
+				AppData.Buff[i++] = 0xFF;
+///////////////////////////////////////////////////////////////////////////////////
+				AppData.Buff[i++] = 0xFF;	
+				AppData.Buff[i++] = 0xFF;	
+				AppData.Buff[i++] = 0xFF;	
+				AppData.Buff[i++] = 0xFF;
+				AppData.Buff[i++] = 0xFF;	
+				AppData.Buff[i++] = 0xFF;	
+				AppData.Buff[i++] = 0xFF;	
+				AppData.Buff[i++] = 0xFF;			 
+///////////////////////////////////////////////////////////////////////////////////			 
 		 }
 		else
 		{
-			  AppData.Buff[i++] =(int)latitude>>24& 0xFF;
-			  AppData.Buff[i++] =(int)latitude>>16& 0xFF;
-			  AppData.Buff[i++] =(int)latitude>>8& 0xFF;
-			  AppData.Buff[i++] =(int)latitude& 0xFF;
-				AppData.Buff[i++] =(int)longitude>>24& 0xFF;
-			  AppData.Buff[i++] =(int)longitude>>16& 0xFF;
-			  AppData.Buff[i++] =(int)longitude>>8& 0xFF;
-			  AppData.Buff[i++] =(int)longitude& 0xFF;		 
+			  AppData.Buff[i++] =(int)latitude>>24 & 0xFF;
+			  AppData.Buff[i++] =(int)latitude>>16 & 0xFF;
+			  AppData.Buff[i++] =(int)latitude>>8 & 0xFF;
+			  AppData.Buff[i++] =(int)latitude & 0xFF;
+				AppData.Buff[i++] =(int)longitude>>24 & 0xFF;
+			  AppData.Buff[i++] =(int)longitude>>16 & 0xFF;
+			  AppData.Buff[i++] =(int)longitude>>8 & 0xFF;
+			  AppData.Buff[i++] =(int)longitude & 0xFF;	
+///////////////////////////////////////////////////////////////////////////////////
+				AppData.Buff[i++] =(int)(speed)>>24 & 0xFF;
+				AppData.Buff[i++] =(int)(speed)>>16 & 0xFF;
+				AppData.Buff[i++] =(int)(speed)>>8 & 0xFF;
+				AppData.Buff[i++] =(int)(speed) & 0xFF;
+				AppData.Buff[i++] =(int)(heading)>>24 & 0xFF;
+				AppData.Buff[i++] =(int)(heading)>>16 & 0xFF;
+				AppData.Buff[i++] =(int)(heading)>>8 & 0xFF;
+				AppData.Buff[i++] =(int)(heading) & 0xFF;
+///////////////////////////////////////////////////////////////////////////////////
+			
 		}
    if(set_sgm == 1)
 		{
@@ -749,7 +803,8 @@ static void Send( void )
 			 AppData.Buff[i++] =(int)(Roll1*100);
 			 AppData.Buff[i++] =(int)(Pitch1*100)>>8;       //Pitch
 			 AppData.Buff[i++] =(int)(Pitch1*100);
-		}		
+		}
+	
 
 	 gps.flag = 1;
 	 gps_setflags=0;			
@@ -935,7 +990,11 @@ static void OnTxTimerEvent( void )
 	
 	gps.flag = 1;
   gps.latitude = 0;
-  gps.longitude = 0;	
+  gps.longitude = 0;
+//////////////////////////////////////////////////////////
+  gps.speed = 0;
+  gps.direction = 0;	
+//////////////////////////////////////////////////////////
 	
 	if(lora_getState() != STATE_GPS_SEND )
 	 { 	
@@ -958,8 +1017,12 @@ static void LoraStartTx(TxEventType_t EventType)
     TimerSetValue( &TxTimer,  APP_TX_DUTYCYCLE); 
 		lora_state_GPS_Send();
 		gps.flag = 1;
-    gps.latitude = 0;
-    gps.longitude = 0;		
+    gps.latitude = 0;		
+		gps.longitude = 0;	
+//////////////////////////////////////////////////////////		
+		gps.speed = 0; 		
+		gps.direction = 0;
+//////////////////////////////////////////////////////////
     OnTxTimerEvent();
   }
 }
@@ -1104,7 +1167,11 @@ void lora_send(void)
 					{	
 						gps_latitude = gps.latitude;
 						gps_longitude = gps.longitude;	
-					  pdop_fixed=pdop_gps;	 						
+					  pdop_fixed=pdop_gps;
+/////////////////////////////////////////////////////////////
+						speed = gps.speed;
+						heading = gps.direction;
+/////////////////////////////////////////////////////////////
 						SendData = 1;
 						if(Positioning_time!=0)
 						{	
@@ -1117,6 +1184,10 @@ void lora_send(void)
 						{
 							gps_latitude = gps.latitude;
 							gps_longitude = gps.longitude;
+/////////////////////////////////////////////////////////////
+							speed = gps.speed;
+							heading = gps.direction;
+/////////////////////////////////////////////////////////////
 							pdop_comp=pdop_gps;						
 						}							
 					}
